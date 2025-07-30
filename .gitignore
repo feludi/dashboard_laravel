@@ -2,6 +2,7 @@
 *.md
 !README.md
 *.ps1
+*.bat
 
 # Laravel specific ignores
 /vendor/
@@ -10,8 +11,17 @@
 /storage/framework/cache/*
 /storage/framework/sessions/*
 /storage/framework/views/*
+/storage/app/public/*
+/bootstrap/cache/*
 .env.local
 .env.*.local
+
+# Optimization and cache files
+/bootstrap/cache/
+/storage/framework/cache/
+/storage/framework/sessions/
+/storage/framework/views/
+/storage/logs/
 
 # IDE specific
 .vscode/settings.json
@@ -22,3 +32,7 @@
 # OS specific
 .DS_Store
 Thumbs.db
+
+# Development files
+test_*.php
+debug_*.php
