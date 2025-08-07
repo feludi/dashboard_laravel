@@ -23,6 +23,7 @@ class User extends Authenticatable
         'phone',
         'bio',
         'avatar',
+        'role',
     ];
 
     /**
@@ -59,5 +60,69 @@ class User extends Authenticatable
         
         // Return default avatar or gravatar
         return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=7F9CF5&background=EBF4FF';
+    }
+
+    /**
+     * Check if user is admin
+     */
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Check if user is operator
+     */
+    public function isOperator()
+    {
+        return $this->role === 'operator';
+    }
+
+    /**
+     * Check if user can view maps
+     */
+    public function canViewMaps()
+    {
+        return $this->isAdmin();
+    }
+
+    /**
+     * Check if user can view foreigner list
+     */
+    public function canViewForeignerList()
+    {
+        return $this->isAdmin();
+    }
+
+    /**
+     * Check if user can add foreigners
+     */
+    public function canAddForeigners()
+    {
+        return true; // Both admin and operator can add
+    }
+
+    /**
+     * Check if user can import foreigners
+     */
+    public function canImportForeigners()
+    {
+        return true; // Both admin and operator can import
+    }
+
+    /**
+     * Check if user can edit foreigners
+     */
+    public function canEditForeigners()
+    {
+        return $this->isAdmin();
+    }
+
+    /**
+     * Check if user can delete foreigners
+     */
+    public function canDeleteForeigners()
+    {
+        return $this->isAdmin();
     }
 }

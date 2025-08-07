@@ -15,19 +15,21 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         User::create([
-            'name' => 'Administrator',
-            'email' => 'admin@dashboard.com',
-            'password' => Hash::make('password'),
-            'phone' => '081234567890',
-            'bio' => 'Administrator Dashboard Pemetaan Orang Asing Kota Cirebon',
+            'name' => 'Super Administrator',
+            'email' => 'superadmin@dashboard.com',
+            'password' => Hash::make('admin123'),
+            'phone' => '081234567899',
+            'bio' => 'Super Administrator Dashboard Pemetaan Orang Asing Kota Cirebon',
+            'role' => 'admin',
         ]);
 
         User::create([
-            'name' => 'Operator Dashboard',
-            'email' => 'operator@dashboard.com',
-            'password' => Hash::make('password'),
-            'phone' => '081234567891',
-            'bio' => 'Operator Dashboard Pemetaan Orang Asing',
+            'name' => 'Dashboard Operator',
+            'email' => 'op@dashboard.com',
+            'password' => Hash::make('operator123'),
+            'phone' => '081234567888',
+            'bio' => 'Operator Dashboard untuk Pemetaan dan Monitoring Orang Asing',
+            'role' => 'operator',
         ]);
     }
 }

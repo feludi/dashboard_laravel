@@ -8,7 +8,8 @@
         "php": "^8.2",
         "laravel/framework": "^11.9",
         "laravel/sanctum": "^4.0",
-        "laravel/tinker": "^2.9"
+        "laravel/tinker": "^2.9",
+        "phpoffice/phpspreadsheet": "^4.5"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -25,7 +26,8 @@
             "Database\\Seeders\\": "database/seeders/"
         },
         "files": [
-            "app/Helpers/AuthHelper.php"
+            "app/Helpers/AuthHelper.php",
+            "app/Helpers/CountryHelper.php"
         ]
     },
     "autoload-dev": {

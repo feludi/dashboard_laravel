@@ -1,0 +1,81 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kota Cirebon",
+        "code": "3274",
+        "type": "city",
+        "province": "Jawa Barat"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [108.5570, -6.7063],
+          [108.5770, -6.7063],
+          [108.5770, -6.6863],
+          [108.5570, -6.6863],
+          [108.5570, -6.7063]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kabupaten Kuningan",
+        "code": "3208",
+        "type": "regency",
+        "province": "Jawa Barat"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [108.4000, -6.9000],
+          [108.6000, -6.9000],
+          [108.6000, -6.7000],
+          [108.4000, -6.7000],
+          [108.4000, -6.9000]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kabupaten Majalengka",
+        "code": "3209",
+        "type": "regency",
+        "province": "Jawa Barat"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [108.0000, -6.8000],
+          [108.2000, -6.8000],
+          [108.2000, -6.6000],
+          [108.0000, -6.6000],
+          [108.0000, -6.8000]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kabupaten Indramayu",
+        "code": "3212",
+        "type": "regency",
+        "province": "Jawa Barat"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [108.1000, -6.4000],
+          [108.4000, -6.4000],
+          [108.4000, -6.2000],
+          [108.1000, -6.2000],
+          [108.1000, -6.4000]
+        ]]
+      }
+    }
+  ]
+}

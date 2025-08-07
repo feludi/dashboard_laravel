@@ -4,8 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Sistem Pemetaan WNA Kantor Imigrasi Kelas I TPI Cirebon</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
             --primary-dark-blue: #1a237e;
@@ -378,9 +384,9 @@
 <body>
     <div class="login-container">
         <div class="login-header">
-            <h1><i class="fas fa-globe"></i>SIMWNA</h1>
-            <p>Sistem Pemetaan WNA</p>
-            <p><small>Kantor Imigrasi Kelas I TPI Cirebon</small></p>
+            <h1><i class="fas fa-globe"></i>ImmiTrace</h1>
+            <p>Immigration Tracing and Mapping System</p>
+            <p><small>Immigration Office Class I TPI Cirebon</small></p>
         </div>
 
         @if(session('error'))

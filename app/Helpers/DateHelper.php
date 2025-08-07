@@ -87,28 +87,45 @@ class DateHelper
         $carbon = $carbon->setTimezone('Asia/Jakarta');
         $now = Carbon::now('Asia/Jakarta');
         
-        $diffInSeconds = $now->diffInSeconds($carbon);
-        $diffInMinutes = $now->diffInMinutes($carbon);
-        $diffInHours = $now->diffInHours($carbon);
-        $diffInDays = $now->diffInDays($carbon);
-        $diffInWeeks = $now->diffInWeeks($carbon);
-        $diffInMonths = $now->diffInMonths($carbon);
-        $diffInYears = $now->diffInYears($carbon);
-        
+        // Calculate difference properly considering past/future
         $isFuture = $carbon->isFuture();
         
-        if ($diffInSeconds < 60) {
+        // Get the actual difference in seconds and round to integers
+        $totalSeconds = (int) abs($carbon->diffInSeconds($now));
+        $diffInMinutes = (int) abs($carbon->diffInMinutes($now));
+        $diffInHours = (int) abs($carbon->diffInHours($now));
+        $diffInDays = (int) abs($carbon->diffInDays($now));
+        $diffInWeeks = (int) floor($diffInDays / 7);
+        $diffInMonths = (int) abs($carbon->diffInMonths($now));
+        $diffInYears = (int) abs($carbon->diffInYears($now));
+        
+        // Handle very recent times more accurately
+        if ($totalSeconds < 10) {
+            return $isFuture ? 'dalam beberapa detik' : 'baru saja';
+        } elseif ($totalSeconds < 60) {
             return $isFuture ? 'dalam beberapa detik' : 'beberapa detik yang lalu';
+        } elseif ($diffInMinutes == 1) {
+            return $isFuture ? 'dalam 1 menit' : '1 menit yang lalu';
         } elseif ($diffInMinutes < 60) {
             return $isFuture ? "dalam {$diffInMinutes} menit" : "{$diffInMinutes} menit yang lalu";
+        } elseif ($diffInHours == 1) {
+            return $isFuture ? 'dalam 1 jam' : '1 jam yang lalu';
         } elseif ($diffInHours < 24) {
             return $isFuture ? "dalam {$diffInHours} jam" : "{$diffInHours} jam yang lalu";
+        } elseif ($diffInDays == 1) {
+            return $isFuture ? 'besok' : 'kemarin';
         } elseif ($diffInDays < 7) {
             return $isFuture ? "dalam {$diffInDays} hari" : "{$diffInDays} hari yang lalu";
+        } elseif ($diffInWeeks == 1) {
+            return $isFuture ? 'dalam 1 minggu' : '1 minggu yang lalu';
         } elseif ($diffInWeeks < 4) {
             return $isFuture ? "dalam {$diffInWeeks} minggu" : "{$diffInWeeks} minggu yang lalu";
+        } elseif ($diffInMonths == 1) {
+            return $isFuture ? 'dalam 1 bulan' : '1 bulan yang lalu';
         } elseif ($diffInMonths < 12) {
             return $isFuture ? "dalam {$diffInMonths} bulan" : "{$diffInMonths} bulan yang lalu";
+        } elseif ($diffInYears == 1) {
+            return $isFuture ? 'dalam 1 tahun' : '1 tahun yang lalu';
         } else {
             return $isFuture ? "dalam {$diffInYears} tahun" : "{$diffInYears} tahun yang lalu";
         }
@@ -136,6 +153,52 @@ class DateHelper
         } else {
             $diffInDays = floor($now->diffInDays($carbon));
             return $diffInDays . ' hari tersisa';
+        }
+    }
+
+    /**
+     * Debug time difference for troubleshooting
+     */
+    public static function debugTimeDifference($date)
+    {
+        if (!$date) return 'No date provided';
+        
+        $carbon = $date instanceof Carbon ? $date : Carbon::parse($date);
+        $carbon = $carbon->setTimezone('Asia/Jakarta');
+        $now = Carbon::now('Asia/Jakarta');
+        
+        return [
+            'original_date' => $date,
+            'parsed_date' => $carbon->format('Y-m-d H:i:s'),
+            'current_time' => $now->format('Y-m-d H:i:s'),
+            'timezone' => $carbon->getTimezone()->getName(),
+            'is_future' => $carbon->isFuture(),
+            'is_past' => $carbon->isPast(),
+            'diff_in_seconds' => $now->diffInSeconds($carbon),
+            'diff_in_minutes' => $now->diffInMinutes($carbon),
+            'human_readable' => self::diffForHumansIndonesian($date)
+        ];
+    }
+
+    /**
+     * Calculate age from birth date
+     */
+    public static function calculateAge($birthDate)
+    {
+        if (!$birthDate) return null;
+        
+        try {
+            $carbon = $birthDate instanceof Carbon ? $birthDate : Carbon::parse($birthDate);
+            $now = Carbon::now('Asia/Jakarta');
+            
+            // Ensure birth date is not in the future
+            if ($carbon->isFuture()) {
+                return null;
+            }
+            
+            return $carbon->diffInYears($now);
+        } catch (\Exception $e) {
+            return null;
         }
     }
 }

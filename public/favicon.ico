@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <!-- Background -->
+  <rect width="32" height="32" fill="#007bff" rx="4"/>
+  
+  <!-- Map pin icon -->
+  <g fill="white">
+    <!-- Pin body -->
+    <path d="M16 4c-4.42 0-8 3.58-8 8 0 6 8 16 8 16s8-10 8-16c0-4.42-3.58-8-8-8z"/>
+    <!-- Pin center -->
+    <circle cx="16" cy="12" r="3" fill="#007bff"/>
+  </g>
+</svg>

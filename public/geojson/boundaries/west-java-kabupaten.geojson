@@ -1,0 +1,87 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kabupaten Cirebon",
+        "code": "3209",
+        "type": "kabupaten",
+        "province": "Jawa Barat"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [108.340, -6.900], [108.800, -6.900], [108.800, -6.600], 
+          [108.630, -6.550], [108.450, -6.580], [108.340, -6.600], 
+          [108.340, -6.900]
+        ]]
+      }
+    },
+    {
+      "type": "Feature", 
+      "properties": {
+        "name": "Kota Cirebon",
+        "code": "3274",
+        "type": "kota",
+        "province": "Jawa Barat"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [108.540, -6.760], [108.590, -6.760], [108.590, -6.710], 
+          [108.540, -6.710], [108.540, -6.760]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kabupaten Indramayu", 
+        "code": "3212",
+        "type": "kabupaten",
+        "province": "Jawa Barat"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [107.750, -6.450], [108.450, -6.450], [108.450, -5.950], 
+          [107.900, -5.980], [107.750, -6.100], [107.750, -6.450]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kabupaten Kuningan",
+        "code": "3208", 
+        "type": "kabupaten",
+        "province": "Jawa Barat"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [108.380, -7.020], [108.850, -7.020], [108.850, -6.780], 
+          [108.650, -6.750], [108.450, -6.800], [108.380, -6.850], 
+          [108.380, -7.020]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kabupaten Majalengka",
+        "code": "3210",
+        "type": "kabupaten", 
+        "province": "Jawa Barat"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [107.950, -6.950], [108.450, -6.950], [108.450, -6.650], 
+          [108.200, -6.620], [107.950, -6.700], [107.950, -6.950]
+        ]]
+      }
+    }
+  ]
+}

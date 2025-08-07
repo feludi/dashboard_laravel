@@ -10,14 +10,26 @@
     </h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <div class="btn-group me-2">
+            @php
+                $currentUser = \App\Http\Controllers\AuthController::user();
+            @endphp
+            @if($currentUser && is_object($currentUser) && $currentUser->canEditForeigners())
             <a href="{{ route('foreigners.edit', $foreigner) }}" class="btn btn-primary">
                 <i class="fas fa-edit me-2"></i>
                 Edit
             </a>
+            @endif
+            @if($currentUser && is_object($currentUser) && $currentUser->canViewForeignerList())
             <a href="{{ route('foreigners.index') }}" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left me-2"></i>
                 Back to List
             </a>
+            @else
+            <a href="{{ route('dashboard.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>
+                Back to Dashboard
+            </a>
+            @endif
         </div>
     </div>
 </div>
@@ -47,7 +59,7 @@
                             <tr>
                                 <th>Date of Birth:</th>
                                 <td>
-                                    {{ \App\Helpers\DateHelper::formatIndonesian($foreigner->date_of_birth, 'd F Y') ?: 'Tidak ditentukan' }}
+                                    {{ \App\Helpers\DateHelper::formatIndonesian($foreigner->date_of_birth, 'd F Y') ?: 'Not specified' }}
                                     @if($foreigner->date_of_birth)
                                         <small class="text-muted">({{ $foreigner->date_of_birth->age }} years old)</small>
                                     @endif
@@ -68,12 +80,7 @@
                                 <th width="40%">Nationality:</th>
                                 <td>
                                     <span class="d-flex align-items-center">
-                                        <img src="{{ \App\Helpers\CountryHelper::getFlagUrl($foreigner->nationality, '24') }}" 
-                                             alt="{{ $foreigner->nationality }} flag" 
-                                             class="nationality-flag me-2"
-                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"
-                                             style="width: 24px; height: 16px; border-radius: 2px; border: 1px solid #ddd; object-fit: cover;">
-                                        <span class="flag-emoji" style="display:none; font-size: 16px; margin-right: 8px;">{{ \App\Helpers\CountryHelper::getFlagEmoji($foreigner->nationality) }}</span>
+                                        <span class="flag-emoji" style="font-size: 20px; margin-right: 8px;">{{ \App\Helpers\CountryHelper::getFlagEmoji($foreigner->nationality) }}</span>
                                         {{ $foreigner->nationality }}
                                     </span>
                                 </td>
@@ -112,12 +119,12 @@
             </div>
         </div>
 
-        <!-- Visa Information -->
+        <!-- Residence Permit Information -->
         <div class="card mb-4">
             <div class="card-header">
                 <h5 class="card-title mb-0">
                     <i class="fas fa-id-card me-2"></i>
-                    Visa Information
+                    Residence Permit Information
                 </h5>
             </div>
             <div class="card-body">
@@ -125,16 +132,21 @@
                     <div class="col-md-6">
                         <table class="table table-borderless">
                             <tr>
-                                <th width="40%">Visa Type:</th>
+                                <th width="40%">Residence Permit Type:</th>
                                 <td>
-                                    <span class="badge bg-info">{{ $foreigner->visa_type }}</span>
+                                    <span class="badge bg-info">{{ $foreigner->residence_permit_type }}</span>
                                 </td>
                             </tr>
                             <tr>
-                                <th>Visa Status:</th>
+                                <th>Residence Permit Status:</th>
                                 <td>
-                                    <span class="badge bg-{{ $foreigner->visa_status === 'Active' ? 'success' : ($foreigner->visa_status === 'Expired' ? 'danger' : 'warning') }}">
-                                        {{ $foreigner->visa_status }}
+                                    @php
+                                        $isExpired = $foreigner->residence_permit_expiry_date && now()->isAfter($foreigner->residence_permit_expiry_date);
+                                        $permitStatus = $isExpired ? 'Expired' : 'Active';
+                                        $badgeColor = $isExpired ? 'danger' : 'success';
+                                    @endphp
+                                    <span class="badge bg-{{ $badgeColor }}">
+                                        {{ $permitStatus }}
                                     </span>
                                 </td>
                             </tr>
@@ -154,17 +166,17 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th>Tanggal Kedaluwarsa Visa:</th>
+                                <th>Residence Permit Expiry Date:</th>
                                 <td>
-                                    @if($foreigner->visa_expiry_date)
-                                        {{ \App\Helpers\DateHelper::formatIndonesian($foreigner->visa_expiry_date, 'd F Y') }}
-                                        @if($foreigner->visa_expiry_date->isPast())
-                                            <span class="badge bg-danger ms-1">Kedaluwarsa</span>
-                                        @elseif(floor($foreigner->visa_expiry_date->diffInDays()) < 30)
-                                            <span class="badge bg-warning ms-1">{{ \App\Helpers\DateHelper::daysRemainingIndonesian($foreigner->visa_expiry_date) }}</span>
+                                    @if($foreigner->residence_permit_expiry_date)
+                                        {{ \App\Helpers\DateHelper::formatIndonesian($foreigner->residence_permit_expiry_date, 'd F Y') }}
+                                        @if($foreigner->residence_permit_expiry_date->isPast())
+                                            <span class="badge bg-danger ms-1">EXPIRED</span>
+                                        @elseif(floor($foreigner->residence_permit_expiry_date->diffInDays()) < 30)
+                                            <span class="badge bg-warning ms-1">{{ \App\Helpers\DateHelper::daysRemainingIndonesian($foreigner->residence_permit_expiry_date) }}</span>
                                         @endif
                                     @else
-                                        <span class="text-muted">Tidak ditentukan</span>
+                                        <span class="badge bg-success">Permanent</span>
                                     @endif
                                 </td>
                             </tr>
@@ -201,6 +213,14 @@
                         </div>
                         <div class="mb-2">
                             <strong>Kelurahan/Desa:</strong>
+                            <p class="mb-1">{{ $foreigner->village ?: 'Not specified' }}</p>
+                        </div>
+                        <div class="mb-2">
+                            <strong>Postal Code:</strong>
+                            <p class="mb-1">{{ $foreigner->postal_code ?: 'Not specified' }}</p>
+                        </div>
+                        <div class="mb-2">
+                            <strong>Country:</strong>
                             <p class="mb-1">{{ $foreigner->country ?: 'Not specified' }}</p>
                         </div>
                     </div>
@@ -252,10 +272,12 @@
                     <div class="text-center p-4">
                         <i class="fas fa-user-circle fa-5x text-muted mb-3"></i>
                         <p class="text-muted mb-0">Belum ada foto</p>
+                        @if($currentUser && is_object($currentUser) && $currentUser->canEditForeigners())
                         <a href="{{ route('foreigners.edit', $foreigner) }}" class="btn btn-sm btn-outline-primary mt-2">
                             <i class="fas fa-camera me-1"></i>
                             Tambah Foto
                         </a>
+                        @endif
                     </div>
                 @endif
             </div>
@@ -271,11 +293,24 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
+                    @if($currentUser && is_object($currentUser) && $currentUser->canEditForeigners())
                     <a href="{{ route('foreigners.edit', $foreigner) }}" class="btn btn-primary">
                         <i class="fas fa-edit me-2"></i>
                         Edit Information
                     </a>
+                    @endif
+                    @if($currentUser && is_object($currentUser) && $currentUser->canDeleteForeigners())
                     <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                        <i class="fas fa-trash me-2"></i>
+                        Delete Record
+                    </button>
+                    @endif
+                    @if(!($currentUser && is_object($currentUser) && $currentUser->canEditForeigners()) && !($currentUser && is_object($currentUser) && $currentUser->canDeleteForeigners()))
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <small>You don't have permission to modify this record</small>
+                    </div>
+                    @endif
                         <i class="fas fa-trash me-2"></i>
                         Delete Record
                     </button>
@@ -311,7 +346,8 @@
     </div>
 </div>
 
-<!-- Delete Confirmation Modal -->
+<!-- Delete Confirmation Modal (only for users with delete permissions) -->
+@if($currentUser && is_object($currentUser) && $currentUser->canDeleteForeigners())
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -340,6 +376,7 @@
         </div>
     </div>
 </div>
+@endif
 @endsection
 
 @push('styles')
@@ -351,7 +388,16 @@
 @if($foreigner->latitude && $foreigner->longitude)
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const map = L.map('map').setView([{{ $foreigner->latitude }}, {{ $foreigner->longitude }}], 13);
+        // Fix Leaflet marker icon paths
+        delete L.Icon.Default.prototype._getIconUrl;
+        L.Icon.Default.mergeOptions({
+            iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+            shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+            iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+            shadowRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png'
+        });
+        
+        const map = L.map('map').setView([{{ $foreigner->latitude }}, {{ $foreigner->longitude }}], 15);
         
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'

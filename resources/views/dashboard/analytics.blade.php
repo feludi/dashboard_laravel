@@ -1,30 +1,30 @@
 @extends('layouts.app')
 
-@section('title', 'Analitik - SIMWNA Kantor Imigrasi Kelas I TPI Cirebon')
-@section('page-title', 'Analitik & Laporan')
+@section('title', 'Analytics - ImmiTrace Immigration Office Class I TPI Cirebon')
+@section('page-title', 'Analytics & Reports')
 
 @section('page-actions')
 <div class="btn-group" role="group">
     <button type="button" class="btn btn-outline-primary" onclick="window.print()">
-        <i class="fas fa-print me-2"></i>Cetak Laporan
+        <i class="fas fa-print me-2"></i>Print Report
     </button>
     <button type="button" class="btn btn-outline-primary" id="exportData">
-        <i class="fas fa-download me-2"></i>Ekspor Data
+        <i class="fas fa-download me-2"></i>Export Data
     </button>
 </div>
 @endsection
 
 @section('content')
-<!-- Visa Expiry Alerts -->
+<!-- Residence Permit Expiry Alerts -->
 @if($upcomingExpirations->count() > 0)
 <div class="row mb-4">
     <div class="col-12">
         <div class="alert alert-warning" role="alert">
             <h5 class="alert-heading">
                 <i class="fas fa-exclamation-triangle me-2"></i>
-                Peringatan Kedaluwarsa Visa
+                Residence Permit Expiry Warning
             </h5>
-            <p>{{ $upcomingExpirations->count() }} visa akan kedaluwarsa dalam 30 hari ke depan.</p>
+            <p>{{ $upcomingExpirations->count() }} residence permits will expire in the next 30 days.</p>
             <hr>
             <div class="row">
                 @foreach($upcomingExpirations->take(3) as $expiring)
@@ -33,7 +33,7 @@
                         <i class="fas fa-user-clock text-warning me-2"></i>
                         <div>
                             <strong>{{ $expiring->full_name }}</strong><br>
-                            <small>Expires: {{ \App\Helpers\DateHelper::formatIndonesian($expiring->visa_expiry_date, 'd F Y') }}</small>
+                            <small>Expires: {{ \App\Helpers\DateHelper::formatIndonesian($expiring->residence_permit_expiry_date, 'd F Y') }}</small>
                         </div>
                     </div>
                 </div>
@@ -42,7 +42,7 @@
             @if($upcomingExpirations->count() > 3)
             <p class="mb-0 mt-2">
                 <a href="{{ route('foreigners.index') }}?filter=expiring" class="alert-link">
-                    View all {{ $upcomingExpirations->count() }} expiring visas
+                    View all {{ $upcomingExpirations->count() }} expiring residence permits
                 </a>
             </p>
             @endif
@@ -86,6 +86,21 @@
 
 <!-- Charts Row 2 -->
 <div class="row mb-4">
+    <!-- Residence Permit Types Distribution -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Residence Permit Types Distribution
+                </h6>
+            </div>
+            <div class="card-body">
+                <canvas id="residencePermitTypeChart"></canvas>
+            </div>
+        </div>
+    </div>
+
     <!-- Age Distribution -->
     <div class="col-lg-6 mb-4">
         <div class="card">
@@ -107,7 +122,7 @@
             <div class="card-header">
                 <h6 class="m-0 font-weight-bold text-primary">
                     <i class="fas fa-calendar-alt me-2"></i>
-                    Upcoming Visa Expirations
+                    Upcoming Residence Permit Expirations
                 </h6>
             </div>
             <div class="card-body">
@@ -130,21 +145,16 @@
                                     </a>
                                 </td>
                                 <td>
-                                    <img src="{{ \App\Helpers\CountryHelper::getFlagUrl($expiring->nationality) }}" 
-                                         class="nationality-flag me-1" 
-                                         alt="{{ $expiring->nationality }}"
-                                         style="width: 20px; height: 15px; object-fit: cover; vertical-align: middle;"
-                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
-                                    <span style="display: none; font-size: 14px;">{{ \App\Helpers\CountryHelper::getFlagEmoji($expiring->nationality) }}</span>
+                                    <span style="font-size: 16px; margin-right: 8px;">{{ \App\Helpers\CountryHelper::getFlagEmoji($expiring->nationality) }}</span>
                                     {{ $expiring->nationality }}
                                 </td>
-                                <td>{{ \App\Helpers\DateHelper::formatIndonesian($expiring->visa_expiry_date, 'd F Y') }}</td>
+                                <td>{{ \App\Helpers\DateHelper::formatIndonesian($expiring->residence_permit_expiry_date, 'd F Y') }}</td>
                                 <td>
                                     @php
-                                        $daysLeft = floor(now()->diffInDays($expiring->visa_expiry_date));
+                                        $daysLeft = floor(now()->diffInDays($expiring->residence_permit_expiry_date));
                                     @endphp
                                     <span class="badge bg-{{ $daysLeft <= 7 ? 'danger' : ($daysLeft <= 14 ? 'warning' : 'info') }}">
-                                        {{ $daysLeft }} hari
+                                        {{ $daysLeft }} days
                                     </span>
                                 </td>
                             </tr>
@@ -188,14 +198,14 @@
                     </div>
                     <div class="col-md-3 mb-3">
                         <div class="border-start border-success ps-3">
-                            <div class="text-success">Most Common Visa Type</div>
+                            <div class="text-success">Most Common Residence Permit Type</div>
                             <div class="h6 mb-0">
                                 @php
-                                    $commonVisa = \App\Models\Foreigner::selectRaw('visa_type, COUNT(*) as count')
-                                        ->groupBy('visa_type')
-                                        ->orderBy('count', 'desc')
+                                    $commonPermit = \App\Models\Foreigner::selectRaw('residence_permit_type, COUNT(*) as count')
+                                        ->groupBy('residence_permit_type')
+                                        ->orderByDesc('count')
                                         ->first();
-                                    echo $commonVisa ? $commonVisa->visa_type : 'N/A';
+                                    echo $commonPermit ? $commonPermit->residence_permit_type : 'N/A';
                                 @endphp
                             </div>
                         </div>
@@ -211,12 +221,7 @@
                                         ->first();
                                 @endphp
                                 @if($commonNationality)
-                                    <img src="{{ \App\Helpers\CountryHelper::getFlagUrl($commonNationality->nationality) }}" 
-                                         class="nationality-flag me-1" 
-                                         alt="{{ $commonNationality->nationality }}"
-                                         style="width: 20px; height: 15px; object-fit: cover; vertical-align: middle;"
-                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
-                                    <span style="display: none; font-size: 14px;">{{ \App\Helpers\CountryHelper::getFlagEmoji($commonNationality->nationality) }}</span>
+                                    <span style="font-size: 16px; margin-right: 8px;">{{ \App\Helpers\CountryHelper::getFlagEmoji($commonNationality->nationality) }}</span>
                                     {{ $commonNationality->nationality }}
                                 @else
                                     N/A
@@ -237,9 +242,9 @@
                                     
                                     if ($peakMonth) {
                                         $monthNames = [
-                                            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
-                                            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-                                            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                                            1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April',
+                                            5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August',
+                                            9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December'
                                         ];
                                         echo $monthNames[$peakMonth->month] ?? 'N/A';
                                     } else {
@@ -315,6 +320,46 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+
+    // Residence Permit Types Chart
+    const residencePermitTypesData = @json($residencePermitTypes ?? []);
+    if (residencePermitTypesData && Object.keys(residencePermitTypesData).length > 0) {
+        new Chart(document.getElementById('residencePermitTypeChart'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(residencePermitTypesData),
+                datasets: [{
+                    data: Object.values(residencePermitTypesData),
+                    backgroundColor: [
+                        '#4e73df',
+                        '#1cc88a',
+                        '#36b9cc',
+                        '#f6c23e',
+                        '#e74a3b',
+                        '#858796'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    }
+                }
+            }
+        });
+    } else {
+        document.getElementById('residencePermitTypeChart').parentElement.parentElement.innerHTML = 
+            '<div class="text-center py-4 text-muted"><i class="fas fa-chart-pie fa-2x mb-2"></i><p class="mb-0">No residence permit data available</p></div>';
+    }
 
     // Age Chart
     const ageData = @json($ageStats);

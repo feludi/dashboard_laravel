@@ -9,6 +9,7 @@ class Foreigner extends Model
 {
     use HasFactory;
 
+    // Fields that can be mass assigned
     protected $fillable = [
         'first_name',
         'last_name',
@@ -18,39 +19,47 @@ class Foreigner extends Model
         'date_of_birth',
         'gender',
         'occupation',
-        'visa_type',
-        'visa_expiry_date',
+        'residence_permit_type',
+        'residence_permit_status',
+        'residence_permit_issue_date',
+        'residence_permit_expiry_date',
         'current_address',
         'city',
         'state_province',
+        'village',
         'postal_code',
         'country',
         'latitude',
         'longitude',
         'phone_number',
         'email',
-        'emergency_contact_name',
-        'emergency_contact_phone',
+        'sponsor_contact_name',
+        'sponsor_contact_number',
         'entry_date',
         'entry_point',
+        'accommodation_type',
+        'purpose_of_visit',
+        'planned_departure_date',
         'notes',
         'status'
     ];
 
     protected $casts = [
         'date_of_birth' => 'date',
-        'visa_expiry_date' => 'date',
+        'residence_permit_issue_date' => 'date',
+        'residence_permit_expiry_date' => 'date',
         'entry_date' => 'date',
+        'planned_departure_date' => 'date',
         'latitude' => 'decimal:8',
         'longitude' => 'decimal:8',
     ];
 
-    // Optimize database queries by specifying commonly used fields
+    // Boot method for model events
     protected static function boot()
     {
         parent::boot();
         
-        // Auto-update timestamps efficiently
+        // Set timestamps when creating new records
         static::creating(function ($model) {
             $model->created_at = now();
             $model->updated_at = now();
@@ -62,9 +71,14 @@ class Foreigner extends Model
         return $this->first_name . ' ' . $this->last_name;
     }
 
-    public function getIsVisaExpiredAttribute()
+    public function getIsResidencePermitExpiredAttribute()
     {
-        return $this->visa_expiry_date < now();
+        // ITAP (permanent permit) never expires
+        if ($this->residence_permit_type === 'ITAP') {
+            return false;
+        }
+        
+        return $this->residence_permit_expiry_date && $this->residence_permit_expiry_date < now();
     }
 
     public function scopeActive($query)
@@ -72,9 +86,10 @@ class Foreigner extends Model
         return $query->where('status', 'active');
     }
 
-    public function scopeExpiredVisa($query)
+    public function scopeExpiredResidencePermit($query)
     {
-        return $query->where('visa_expiry_date', '<', now());
+        return $query->where('residence_permit_type', '!=', 'ITAP') // Exclude permanent permits
+                    ->where('residence_permit_expiry_date', '<', now());
     }
 
     public function scopeByNationality($query, $nationality)
@@ -87,9 +102,10 @@ class Foreigner extends Model
         return $query->where('state_province', $region);
     }
 
-    public function scopeExpiringVisa($query, $days = 30)
+    public function scopeExpiringResidencePermit($query, $days = 30)
     {
-        return $query->whereBetween('visa_expiry_date', [now(), now()->addDays($days)]);
+        return $query->where('residence_permit_type', '!=', 'ITAP') // Exclude permanent permits
+                    ->whereBetween('residence_permit_expiry_date', [now(), now()->addDays($days)]);
     }
 
     public function scopeByCity($query, $city)
@@ -100,5 +116,68 @@ class Foreigner extends Model
     public function scopeWithCoordinates($query)
     {
         return $query->whereNotNull('latitude')->whereNotNull('longitude');
+    }
+
+    /**
+     * Get permits that are expiring soon (within specified days)
+     */
+    public function scopeExpiringSoon($query, $days = 30)
+    {
+        return $query->where('residence_permit_type', '!=', 'ITAP') // Exclude permanent permits
+                    ->whereBetween('residence_permit_expiry_date', [now(), now()->addDays($days)])
+                    ->whereNotNull('residence_permit_expiry_date');
+    }
+
+    /**
+     * Get number of days until permit expires
+     */
+    public function getDaysUntilExpiryAttribute()
+    {
+        if (!$this->residence_permit_expiry_date || $this->residence_permit_type === 'ITAP') {
+            return null;
+        }
+        
+        return now()->diffInDays($this->residence_permit_expiry_date, false);
+    }
+
+    /**
+     * Check if permit should be marked as expiring soon
+     */
+    public function shouldBeExpiringSoon($days = 30)
+    {
+        if ($this->residence_permit_type === 'ITAP' || !$this->residence_permit_expiry_date) {
+            return false;
+        }
+        
+        $daysUntilExpiry = $this->days_until_expiry;
+        return $daysUntilExpiry !== null && $daysUntilExpiry >= 0 && $daysUntilExpiry <= $days;
+    }
+
+    /**
+     * Auto-update status based on expiry date
+     */
+    public function updateStatusBasedOnExpiry()
+    {
+        // Skip ITAP permits (permanent permits)
+        if ($this->residence_permit_type === 'ITAP' || !$this->residence_permit_expiry_date) {
+            return;
+        }
+
+        $daysUntilExpiry = $this->days_until_expiry;
+        
+        if ($daysUntilExpiry < 0) {
+            // Expired
+            if ($this->status !== 'expired') {
+                $this->update(['status' => 'expired']);
+            }
+        } elseif ($daysUntilExpiry <= 30) {
+            // Expiring soon
+            if ($this->status === 'active') {
+                $this->update(['status' => 'expiring_soon']);
+            }
+        } elseif ($daysUntilExpiry > 30 && $this->status === 'expiring_soon') {
+            // Reset to active if no longer expiring soon
+            $this->update(['status' => 'active']);
+        }
     }
 }

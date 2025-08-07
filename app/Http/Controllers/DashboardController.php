@@ -4,52 +4,143 @@ namespace App\Http\Controllers;
 
 use App\Models\Foreigner;
 use App\Models\Region;
-use App\Services\DashboardCacheService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // Always use fallback for now to ensure stability
-        $stats = $this->getDirectStats();
+        try {
+            // Using cache to speed things up - dashboard gets hit a lot
+            $stats = Cache::remember('dashboard_stats', config('app_optimization.cache.dashboard_stats', 3600), function () {
+                return $this->getDirectStats();
+            });
 
-        // Visa type distribution
-        $visaTypeStats = Foreigner::select('visa_type', DB::raw('count(*) as count'))
-            ->groupBy('visa_type')
-            ->orderBy('count', 'desc')
-            ->get();
+            // Cache residence permit type stats for charts
+            $residencePermitTypes = Cache::remember('residence_permit_type_stats', config('app_optimization.cache.analytics_data', 1800), function () {
+                return Foreigner::select('residence_permit_type', DB::raw('count(*) as count'))
+                    ->whereNotNull('residence_permit_type')
+                    ->groupBy('residence_permit_type')
+                    ->orderBy('count', 'desc')
+                    ->get()
+                    ->pluck('count', 'residence_permit_type')
+                    ->toArray();
+            });
 
-        // Foreigners with coordinates for mapping (optimized query)
-        $foreignersForMap = Foreigner::withCoordinates()
-            ->active()
-            ->select(['id', 'first_name', 'last_name', 'nationality', 'latitude', 'longitude', 'city'])
-            ->get();
+            // Monthly registration trends
+            $monthlyStats = Cache::remember('monthly_stats', config('app_optimization.cache.analytics_data', 1800), function () {
+                return Foreigner::select(
+                    DB::raw('EXTRACT(YEAR FROM entry_date) as year'),
+                    DB::raw('EXTRACT(MONTH FROM entry_date) as month'),
+                    DB::raw('count(*) as count')
+                )
+                ->whereNotNull('entry_date')
+                ->groupBy('year', 'month')
+                ->orderBy('year', 'asc')
+                ->orderBy('month', 'asc')
+                ->limit(12)
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'month' => date('M Y', mktime(0, 0, 0, $item->month, 1, $item->year)),
+                        'count' => (int) $item->count,
+                        'year' => (int) $item->year,
+                        'month_num' => (int) $item->month
+                    ];
+                })
+                ->sortBy(function($item) {
+                    return $item['year'] * 100 + $item['month_num'];
+                })
+                ->values()
+                ->toArray();
+            });
 
-        return view('dashboard.index', compact(
-            'stats',
-            'visaTypeStats', 
-            'foreignersForMap'
-        ));
+            // Recent foreigners
+            $recentForeigners = Cache::remember('recent_foreigners', config('app_optimization.cache.analytics_data', 1800), function () {
+                return Foreigner::select(['id', 'first_name', 'last_name', 'nationality', 'residence_permit_type', 'residence_permit_expiry_date', 'entry_date', 'created_at'])
+                    ->orderBy('entry_date', 'desc')
+                    ->whereNotNull('entry_date')
+                    ->limit(5)
+                    ->get();
+            });
+
+            // Optimized foreigners for map with caching
+            $foreignersForMap = Cache::remember('foreigners_map_data', config('app_optimization.cache.analytics_data', 1800), function () {
+                return Foreigner::withCoordinates()
+                    ->select(['id', 'first_name', 'last_name', 'nationality', 'residence_permit_type', 'status', 'residence_permit_expiry_date', 'latitude', 'longitude', 'city'])
+                    ->get();
+            });
+
+            return view('dashboard.index', compact(
+                'stats',
+                'residencePermitTypes',
+                'monthlyStats',
+                'recentForeigners',
+                'foreignersForMap'
+            ));
+
+        } catch (\Exception $e) {
+            Log::error('Dashboard loading error', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id()
+            ]);
+
+            // Fallback to basic stats if caching fails
+            $stats = $this->getDirectStats();
+            $residencePermitTypes = [];
+            $monthlyStats = [];
+            $recentForeigners = collect([]);
+            $foreignersForMap = collect([]);
+
+            return view('dashboard.index', compact(
+                'stats',
+                'permitTypes',
+                'monthlyStats',
+                'recentForeigners',
+                'foreignersForMap'
+            ))->with('warning', 'Some dashboard features may be limited.');
+        }
     }
 
     public function map()
     {
-        // Use optimized query with select only needed fields
+        // Check if user can view maps
+        $currentUser = \App\Http\Controllers\AuthController::user();
+        if (!$currentUser || !is_object($currentUser) || !$currentUser->canViewMaps()) {
+            abort(403, 'You do not have permission to view maps.');
+        }
+
+        // Get all foreigners with coordinates for map popup (not just active ones)
         $foreigners = Foreigner::withCoordinates()
-            ->active()
-            ->select(['id', 'first_name', 'last_name', 'nationality', 'latitude', 'longitude', 'city'])
+            ->select([
+                'id', 'first_name', 'last_name', 'nationality', 'residence_permit_type', 'status',
+                'city', 'state_province', 'passport_number', 'entry_date', 'residence_permit_expiry_date',
+                'latitude', 'longitude'
+            ])
             ->get();
 
-        // Use direct query for regions
-        $regions = Region::select(['id', 'name', 'country'])
-            ->orderBy('name')
+        // Get regions with basic data only
+        $regions = Region::select(['id', 'name', 'code', 'country', 'latitude', 'longitude'])
             ->get()
+            ->map(function ($region) {
+                return [
+                    'id' => $region->id,
+                    'name' => $region->name,
+                    'code' => $region->code,
+                    'country' => $region->country,
+                    'latitude' => $region->latitude,
+                    'longitude' => $region->longitude
+                ];
+            })
             ->toArray();
 
         return view('dashboard.map', compact('foreigners', 'regions'));
-    }    public function analytics()
+    }
+
+    public function analytics()
     {
         // Monthly entry trends (PostgreSQL compatible)
         $monthlyEntries = Foreigner::select(
@@ -64,11 +155,11 @@ class DashboardController extends Controller
         ->limit(12)
         ->get();
 
-        // Visa expiry alerts (next 30 days)
-        $upcomingExpirations = Foreigner::where('visa_expiry_date', '>=', now())
-            ->where('visa_expiry_date', '<=', now()->addDays(30))
+        // Residence permit expiry alerts (next 30 days)
+        $upcomingExpirations = Foreigner::where('residence_permit_expiry_date', '>=', now())
+            ->where('residence_permit_expiry_date', '<=', now()->addDays(30))
             ->where('status', 'active')
-            ->orderBy('visa_expiry_date')
+            ->orderBy('residence_permit_expiry_date')
             ->get();
 
         // Gender distribution
@@ -91,11 +182,22 @@ class DashboardController extends Controller
         ->groupBy('age_group')
         ->get();
 
+        // Residence permit types distribution
+        $residencePermitTypes = Foreigner::select('residence_permit_type')
+            ->selectRaw('COUNT(*) as count')
+            ->whereNotNull('residence_permit_type')
+            ->groupBy('residence_permit_type')
+            ->orderBy('count', 'desc')
+            ->get()
+            ->pluck('count', 'residence_permit_type')
+            ->toArray();
+
         return view('dashboard.analytics', compact(
             'monthlyEntries',
             'upcomingExpirations',
             'genderStats',
-            'ageStats'
+            'ageStats',
+            'residencePermitTypes'
         ));
     }
 
@@ -107,8 +209,8 @@ class DashboardController extends Controller
         return [
             'total_foreigners' => Foreigner::count(),
             'active_foreigners' => Foreigner::active()->count(),
-            'expired_visas' => Foreigner::expiredVisa()->count(),
-            'expiring_soon' => Foreigner::expiringVisa(30)->count(),
+            'expired_residence_permits' => Foreigner::expiredResidencePermit()->count(),
+            'expiring_soon' => Foreigner::expiringResidencePermit(30)->count(),
             'by_nationality' => Foreigner::select('nationality')
                 ->selectRaw('COUNT(*) as count')
                 ->groupBy('nationality')

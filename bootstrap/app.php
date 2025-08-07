@@ -11,8 +11,18 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Global middleware
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+        
+        // Middleware aliases
         $middleware->alias([
             'auth.custom' => \App\Http\Middleware\AuthMiddleware::class,
+            'rate.limit' => \App\Http\Middleware\RateLimitApi::class,
+        ]);
+        
+        // Web middleware group additions
+        $middleware->web(append: [
+            \App\Http\Middleware\SecurityHeaders::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

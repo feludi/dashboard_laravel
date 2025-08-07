@@ -1,20 +1,15 @@
 @extends('layouts.app')
 
 @section('title', 'Edit Profil')
+@section('page-title', 'Edit Profil')
+
+@section('page-actions')
+<a href="{{ route('profile.show') }}" class="btn btn-outline-secondary btn-sm">
+    <i class="fas fa-arrow-left me-1"></i>Kembali
+</a>
+@endsection
 
 @section('content')
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">
-        <i class="fas fa-user-edit me-2"></i>
-        Edit Profil
-    </h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ route('profile.show') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-2"></i>
-            Kembali
-        </a>
-    </div>
-</div>
 
 @if(session('success'))
     <div class="alert alert-success alert-dismissible fade show" role="alert">
