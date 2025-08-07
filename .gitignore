@@ -32,3 +32,93 @@ Thumbs.db
 # Development files
 test_*.php
 debug_*.php
+*.md.backup
+*_broken.blade.php
+*_fixed.blade.php
+*_simple.blade.php
+*_backup.blade.php
+*_new.blade.php
+*_grouped.blade.php
+debug.blade.php
+test.blade.php
+
+# Development documentation and scripts
+*.puml
+*.sh
+analyze_*.php
+check_*.php
+edit_*.php
+examine_*.php
+fix_*.php
+migrate_*.php
+show_*.php
+update_*.php
+user_*.php
+verify_*.php
+database_*.php
+class_diagram.*
+*_diagram.*
+system_*.puml
+detailed_*.puml
+flowchart_*.puml
+usecase_*.puml
+sequence_*.puml
+
+# Development documentation files
+AUTOMATIC_STATUS_UPDATES.md
+DEPLOYMENT_CHECKLIST.md
+DEVELOPMENT_NOTES.md
+MAPS_SETUP.md
+PRODUCTION_DEPLOYMENT_GUIDE.md
+RESIDENCE_PERMIT_CHANGES.md
+documentation/
+
+# Docker and deployment files
+Dockerfile
+docker-compose.yml
+nginx.conf
+php-fpm-*.conf
+deploy.sh
+dev-reset.sh
+disaster-recovery.sh
+
+# Environment files
+.env.production
+.env.staging
+.env.development
+
+# Test and debug files
+public/flag-debug.html
+public/flag-proxy.php
+public/status.html
+public/test-*.html
+test_*.html
+
+# Development console commands
+app/Console/Commands/AddCoordinatesToForeigners.php
+app/Console/Commands/DatabaseBackup.php
+app/Console/Commands/MigrateToPostgreSQL.php
+app/Console/Commands/OptimizeDashboard.php
+app/Console/Commands/OptimizeProduction.php
+app/Console/Commands/ProductionChecklist.php
+
+# Test controllers and models
+app/Http/Controllers/TestStatusController.php
+app/Models/RegionBoundary.php
+
+# Development services
+app/Services/DashboardOptimizationService.php
+app/Services/PostgreSQLMigrationService.php
+
+# Development config files
+config/app_optimization.php
+
+# Test database files
+database/migrations/*_create_regions_table.php
+database/seeders/TestForeignersSeeder.php
+
+# VS Code tasks
+.vscode/tasks.json
+
+# Storage directory (should be created by Laravel)
+/storage/
