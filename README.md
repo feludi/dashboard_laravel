@@ -170,8 +170,10 @@ php artisan db:seed
 
 ### Step 5: Storage Configuration
 
+**Important**: The storage directory structure is automatically preserved when you clone this repository (via `.gitignore` files in each directory). If you experience 500 errors related to missing storage directories, they should already be present.
+
 ```bash
-# Create symbolic link for storage
+# Create symbolic link for storage (required for file uploads)
 php artisan storage:link
 
 # Set proper permissions (Linux/Mac)
@@ -180,6 +182,10 @@ chown -R www-data:www-data storage bootstrap/cache
 
 # Windows (run as administrator)
 # The project should work without additional permission changes
+
+# If you still get storage-related errors, manually create directories:
+# mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views
+# mkdir -p storage/app/public storage/logs bootstrap/cache
 ```
 
 ### Step 6: Start the Application
