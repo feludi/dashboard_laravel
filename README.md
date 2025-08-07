@@ -147,7 +147,7 @@ LOG_LEVEL=debug
 DB_CONNECTION=pgsql
 DB_HOST=127.0.0.1
 DB_PORT=5432
-DB_DATABASE=dashboard_laravel_db
+DB_DATABASE=foreigner_dashboard
 DB_USERNAME=postgres
 DB_PASSWORD=your_password
 
@@ -204,7 +204,7 @@ VITE_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"
 psql -U postgres -h localhost
 
 # In PostgreSQL shell:
-CREATE DATABASE dashboard_laravel_db;
+CREATE DATABASE foreigner_dashboard;
 CREATE USER laravel_user WITH PASSWORD 'your_password';
 GRANT ALL PRIVILEGES ON DATABASE dashboard_laravel_db TO laravel_user;
 \q
@@ -515,3 +515,4 @@ For support and questions:
 
 **© 2025 ImmiTrace – Immigration Tracing and Mapping System**  
 *Professional Immigration Management Solution*
+
