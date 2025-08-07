@@ -141,7 +141,7 @@ APP_URL=http://localhost:8000
 DB_CONNECTION=pgsql
 DB_HOST=127.0.0.1
 DB_PORT=5432
-DB_DATABASE=dashboard_laravel_db
+DB_DATABASE=foreigner_dashboard
 DB_USERNAME=postgres
 DB_PASSWORD=your_password
 ```
@@ -153,14 +153,14 @@ DB_PASSWORD=your_password
 psql -U postgres -h localhost
 
 # In PostgreSQL shell:
-CREATE DATABASE dashboard_laravel_db;
+CREATE DATABASE foreigner_dashboard;
 CREATE USER laravel_user WITH PASSWORD 'your_password';
-GRANT ALL PRIVILEGES ON DATABASE dashboard_laravel_db TO laravel_user;
+GRANT ALL PRIVILEGES ON DATABASE foreigner_dashboard TO laravel_user;
 \q
 
 # Or using pgAdmin GUI:
 # 1. Open pgAdmin
-# 2. Create new database: dashboard_laravel_db
+# 2. Create new database: foreigner_dashboard
 # 3. Create user: laravel_user with appropriate permissions
 
 # Run migrations and seeders
