@@ -18,7 +18,6 @@ return new class extends Migration
         // Insert Cirebon immigration office jurisdiction regions
         DB::table('regions')->insert([
             [
-                'id' => 1,
                 'name' => 'Kabupaten Cirebon',
                 'code' => 'CRB_KAB',
                 'country' => 'Indonesia',
@@ -28,7 +27,6 @@ return new class extends Migration
                 'updated_at' => now(),
             ],
             [
-                'id' => 2,
                 'name' => 'Kota Cirebon',
                 'code' => 'CRB_KOTA',
                 'country' => 'Indonesia',
@@ -38,7 +36,6 @@ return new class extends Migration
                 'updated_at' => now(),
             ],
             [
-                'id' => 3,
                 'name' => 'Kabupaten Indramayu',
                 'code' => 'IDM',
                 'country' => 'Indonesia',
@@ -48,7 +45,6 @@ return new class extends Migration
                 'updated_at' => now(),
             ],
             [
-                'id' => 4,
                 'name' => 'Kabupaten Majalengka',
                 'code' => 'MJL',
                 'country' => 'Indonesia',
@@ -58,7 +54,6 @@ return new class extends Migration
                 'updated_at' => now(),
             ],
             [
-                'id' => 5,
                 'name' => 'Kabupaten Kuningan',
                 'code' => 'KNG',
                 'country' => 'Indonesia',

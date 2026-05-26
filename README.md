@@ -206,14 +206,16 @@ http://localhost:8000 (or your configured port)
 ### Default User Accounts
 
 **Administrator Account:**
-- **Username**: `admin`
-- **Password**: `password123`
+- **Email**: `superadmin@dashboard.com`
+- **Password**: `admin123`
 - **Permissions**: Full system access
 
 **Operator Account:**
-- **Username**: `operator`
-- **Password**: `password123`
+- **Email**: `op@dashboard.com`
+- **Password**: `operator123`
 - **Permissions**: Add and import data
+
+Note: the login form uses the email field as the username, so enter the email address above.
 
 ## 💾 Database Schema
 
